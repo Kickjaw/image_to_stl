@@ -1,0 +1,29 @@
+from solid import *
+from solid.utils import *
+import numpy as np
+
+
+testlist = []
+
+array = np.array(  [[1,2,3,4],
+				[5,6,7,8],
+				[9,10,11,12],
+				[13,14,15,16]])
+
+def ArrayToSquare(array,scadlist):
+	x_value = 0
+	y_value = 0
+	
+	for row in array:
+		x_value = 0
+		for pixel in row:
+			scadlist.append(translate([x_value, y_value, 0])(cube([1, 1, pixel])))
+			x_value += 1
+		y_value += 1
+		
+
+ArrayToSquare(array, testlist)
+
+d = union()(testlist)
+
+scad_render_to_file(d, "test.scad")
