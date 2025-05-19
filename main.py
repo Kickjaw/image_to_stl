@@ -2,6 +2,61 @@ import cv2
 import numpy as np
 import pyvista as pv
 
+
+# root = tk.TK()
+
+# root.title("Image to STL")
+
+# tk.Label(root, text="Intensity Scale").pack()
+
+
+# root.mainloop()
+
+def CreateTraversalList(rows, cols):
+    #subtract one as arrays are 0 based
+    rows -=1
+    cols -=1
+
+    #1. 0,0
+    #2  0,1 - 1,0
+    #3  0,2 - 1,1 - 2,0
+    #4  1,2 - 2,1
+    #5  2,2
+
+    x = 0
+    y = 0
+    startX = x
+    startY = y
+
+    traversalList = []
+
+    while True:
+        traversalList.append([x,y])
+        if startX == cols and startY == rows:
+            print(traversalList)
+            return traversalList
+        elif y == 0:           
+            if startY == rows:
+                startX +=1
+            else:
+                startY +=1
+            x = startX    
+            y = startY
+        
+        elif x == cols:
+            if startY == rows:
+                startX +=1
+            else:
+                startY +=1
+            x = startX    
+            y = startY
+        else:
+            x += 1
+            y -= 1      
+
+CreateTraversalList(5,3)
+
+
 class vertexData:
     def __init__(self,x,y,z,index):
         self.x = x
@@ -50,11 +105,53 @@ for x in range(cols-1):
         bottomLeft = vertexMatrix[y+1,x]
         bottomRight = vertexMatrix[y+1,x+1]
 
-        # asseble 2 triangles per 4 points
+        # assemble 2 triangles per 4 points
         faces[faceCount] = [topLeft.index, topRight.index, bottomLeft.index]
         faceCount+=1
         faces[faceCount] = [topRight.index, bottomRight.index, bottomLeft.index]
         faceCount+=1
+
+
+
+
+
+def Smoothing(vertexMatrix, maxDelta):
+    #need to rewrite to be a recursive algorithm that crawls the hole point cloud
+    #want to do it by distance to start not by going down one column and then the next
+    #start in the upper left corner
+    #check if down exists, find delta in z 
+    #check if right exists, find delta in z
+
+
+
+    
+
+
+
+
+
+
+    if y == 0 or x == cols:
+        #we have reached the end of an arc
+        x = startX+1
+            
+
+
+    for vertex in vertexMatrix:
+        top,bottom,right,left = vertex,vertex,vertex,vertex
+
+        if vertex.x > 0:
+            left = vertexMatrix[vertex.y, vertex.x-1]
+        if vertex.x < cols:
+            right = vertexMatrix[vertex.y, vertex.x+1]
+        if vertex.y > 0:
+            top = vertexMatrix[vertex.y-1, x]
+        if vertex.y < rows:
+            bottom = vertexMatrix[vertex.y+1, x]
+
+        vertDelta = abs(top.z-bottom.z)
+        horizDelta = abs(right.z - left.z)      
+
 
 
 
