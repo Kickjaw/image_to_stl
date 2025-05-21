@@ -1,8 +1,9 @@
 import numpy as np
-import enum as Enum
+from enum import Enum
 
 
 def BreadthTraversalList(rows, cols):
+    traversalList = np.zeros((rows*cols,2))
     #subtract one as arrays are 0 based
     rows -=1
     cols -=1
@@ -11,12 +12,12 @@ def BreadthTraversalList(rows, cols):
     startX = x
     startY = y
 
-    traversalList = []
-
+    
+    count = 0
     while True:
-        traversalList.append([x,y])
+        traversalList[count] = [x,y]
+        count+=1
         if startX == cols and startY == rows:
-            print(traversalList)
             return traversalList
         elif y == 0:           
             if startY == rows:
@@ -47,13 +48,14 @@ def VerticalDepthTraversalList(rows, cols):
     startX = 0
     startY = 0
 
-    traversalList = []
+    traversalList = np.zeros(( (rows+1)*(cols+1), 2 ))  # Changed to numpy array
 
+    count = 0
     while True:
-        traversalList.append([x,y])
+        traversalList[count] = [x,y]
+        count += 1
         if startX == cols and y == rows:
-            print(traversalList)
-            return traversalList
+            return traversalList[:count]
         elif y == rows:
             startX +=1
             x = startX
@@ -72,12 +74,14 @@ def HorizontalDepthTraversalList(rows, cols):
     startX = 0
     startY = 0
 
-    traversalList = []
+    traversalList = np.zeros(( (rows+1)*(cols+1), 2 ))  # Changed to numpy array
 
+    count = 0
     while True:
-        traversalList.append([x,y])
+        traversalList[count] = [x,y]
+        count += 1
         if x == cols and startY == rows:
-            return traversalList
+            return traversalList[:count]
         elif x == cols:
             startY +=1
             x = 0
@@ -93,16 +97,17 @@ def SnakeVerticalTraversalList(rows,cols):
     x=0
     y=0
     yTarget = rows
-    
 
     up = False
 
-    traversalList = []
+    traversalList = np.zeros(( (rows+1)*(cols+1), 2 ))  # Changed to numpy array
 
+    count = 0
     while True:
-        traversalList.append([x,y])
+        traversalList[count] = [x,y]
+        count += 1
         if x == cols and y == yTarget:
-            return traversalList
+            return traversalList[:count]
         elif y == yTarget:
             if up:
                 up = False
@@ -126,16 +131,17 @@ def SnakeHorizontalTraversalList(rows,cols):
     x=0
     y=0
     xTarget = cols
-    
 
     right = True
 
-    traversalList = []
+    traversalList = np.zeros(( (rows+1)*(cols+1), 2 ))  # Changed to numpy array
 
+    count = 0
     while True:
-        traversalList.append([x,y])
+        traversalList[count] = [x,y]
+        count += 1
         if x == xTarget and y == rows:
-            return traversalList
+            return traversalList[:count]
         elif x == xTarget:
             if right:
                 right = False
@@ -170,12 +176,14 @@ class TraverseSpiralInwards():
         self.cols = cols
         self.rotation = rotation
         self.direction = Direction.Right if self.rotation == Rotation.ClockWise else Direction.Down
-        self.traverseList = []
+        self.traverseList = np.zeros((self.rows*self.cols,2))
         self.visitedMatrix = np.zeros((rows,cols), dtype=bool)
 
     def Traverse(self):
+        count = 0
         while True:
-            self.traverseList.append(self.x, self.y)
+            self.traverseList[count]=[self.x, self.y]
+            count+=1
             self.visitedMatrix[self.x, self.y] = True
 
             if self.CheckMove():
@@ -200,12 +208,14 @@ class TraverseSpiralInwards():
         elif self.direction == Direction.Left:
             xTarget -=1
         
+        if xTarget > self.cols-1 or xTarget < 0:
+            return False
+        if yTarget > self.rows-1 or yTarget < 0:
+            return False
+
         if self.visitedMatrix[xTarget,yTarget]:
             return False
-        if xTarget > self.cols or xTarget < 0:
-            return False
-        if yTarget > self.rows or yTarget < 0:
-            return False
+        
         return True
 
 

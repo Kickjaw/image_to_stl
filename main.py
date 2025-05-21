@@ -1,60 +1,12 @@
 import cv2
 import numpy as np
 import pyvista as pv
-
-
-# root = tk.TK()
-
-# root.title("Image to STL")
-
-# tk.Label(root, text="Intensity Scale").pack()
-
-
-# root.mainloop()
-
-def CreateTraversalList(rows, cols):
-    #subtract one as arrays are 0 based
-    rows -=1
-    cols -=1
-
-    #1. 0,0
-    #2  0,1 - 1,0
-    #3  0,2 - 1,1 - 2,0
-    #4  1,2 - 2,1
-    #5  2,2
-
-    x = 0
-    y = 0
-    startX = x
-    startY = y
-
-    traversalList = []
-
-    while True:
-        traversalList.append([x,y])
-        if startX == cols and startY == rows:
-            print(traversalList)
-            return traversalList
-        elif y == 0:           
-            if startY == rows:
-                startX +=1
-            else:
-                startY +=1
-            x = startX    
-            y = startY
-        
-        elif x == cols:
-            if startY == rows:
-                startX +=1
-            else:
-                startY +=1
-            x = startX    
-            y = startY
-        else:
-            x += 1
-            y -= 1      
-
-CreateTraversalList(5,3)
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.animation as animation
+import ArrayTraversalMethods as atm
+from ArrayTraversalMethods import TraverseSpiralInwards as TSI
 
 
 class vertexData:
@@ -63,6 +15,7 @@ class vertexData:
         self.y = y
         self.z = z
         self.index = index
+        self.visited = False
 
 class faceData:
     def __init__(self, p1, p2, p3, index):
@@ -72,7 +25,7 @@ class faceData:
         self.index = index
 
 
-img = cv2.imread('test.jpg', cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('test images/test.jpg', cv2.IMREAD_GRAYSCALE)
 img = cv2.resize(img, None, fx=.25, fy=.25)
 
 
@@ -96,73 +49,148 @@ for x in range(cols):
         vertexMatrix[y,x] = vertex
         count+=1
 
-faceCount= 0
-for x in range(cols-1):
-    for y in range(rows-1):
-       
-        topLeft = vertexMatrix[y,x]
-        topRight = vertexMatrix[y,x+1]
-        bottomLeft = vertexMatrix[y+1,x]
-        bottomRight = vertexMatrix[y+1,x+1]
-
-        # assemble 2 triangles per 4 points
-        faces[faceCount] = [topLeft.index, topRight.index, bottomLeft.index]
-        faceCount+=1
-        faces[faceCount] = [topRight.index, bottomRight.index, bottomLeft.index]
-        faceCount+=1
 
 
-
-
-
-def Smoothing(vertexMatrix, maxDelta):
-    #need to rewrite to be a recursive algorithm that crawls the hole point cloud
-    #want to do it by distance to start not by going down one column and then the next
-    #start in the upper left corner
-    #check if down exists, find delta in z 
-    #check if right exists, find delta in z
-
-
-
-    
-
-
-
-
-
-
-    if y == 0 or x == cols:
-        #we have reached the end of an arc
-        x = startX+1
-            
-
-
-    for vertex in vertexMatrix:
-        top,bottom,right,left = vertex,vertex,vertex,vertex
-
-        if vertex.x > 0:
-            left = vertexMatrix[vertex.y, vertex.x-1]
-        if vertex.x < cols:
-            right = vertexMatrix[vertex.y, vertex.x+1]
-        if vertex.y > 0:
-            top = vertexMatrix[vertex.y-1, x]
-        if vertex.y < rows:
-            bottom = vertexMatrix[vertex.y+1, x]
-
-        vertDelta = abs(top.z-bottom.z)
-        horizDelta = abs(right.z - left.z)      
-
-
-
-
-cloud = pv.PolyData(verticies)
-surf = cloud.delaunay_2d()
-surf.plot(show_edges=True)
+# cloud = pv.PolyData(verticies)
+# surf = cloud.delaunay_2d()
+# surf.plot(show_edges=True)
 #cloud.plot(eye_dome_lighting=True)
 # cloud.plot()
 
 # volume = cloud.delaunay_3d(alpha=1.25)
 # shell = volume.extract_geometry()
-# shell.plot()   
+# shell.plot()
+
+def display_vertices_3d(vertices):
+    """
+    Display vertices in a 3D plot
+    Args:
+        vertices: numpy array of shape (N, 3) containing x,y,z coordinates
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Split vertices into x, y, z coordinates
+    x = vertices[:, 0]
+    y = vertices[:, 1]
+    z = vertices[:, 2]
+    
+    # Create the 3D scatter plot
+    ax.scatter(x, y, z, c=z, cmap='viridis')
+    
+    # Labels and title
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title('3D Point Cloud')
+    
+    plt.show()
+
+def animate_vertices_3d(vertices):
+    """
+    Animate vertices being added to a 3D plot.
+    Args:
+        vertices: numpy array of shape (N, 3) containing x,y,z coordinates
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    print(vertices)
+    print(verticies[:,0])
+
+    ax.set_xlim([np.min(vertices[:,0]), np.max(vertices[:,0])])
+    ax.set_ylim([np.min(vertices[:,1]), np.max(vertices[:,1])])
+    ax.set_zlim([np.min(vertices[:,2]), np.max(vertices[:,2])])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title('3D Point Cloud Animation')
+
+    scat = ax.scatter([], [], [], c=[], cmap='viridis')
+
+    def update(frame):
+        x = vertices[:frame, 0]
+        y = vertices[:frame, 1]
+        z = vertices[:frame, 2]
+        c = z
+        scat._offsets3d = (x, y, z)
+        scat.set_array(c)
+        return scat,
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(vertices)+1, interval=20, blit=False, repeat=False
+    )
+    plt.show()
+
+def display_points_2d(points):
+    """
+    Display a list of 2D points in a 2D scatter plot.
+    Args:
+        points: numpy array of shape (N, 2) containing x, y coordinates
+    """
+    plt.figure()
+    x = points[:, 0]
+    y = points[:, 1]
+    plt.scatter(x, y, c='blue')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('2D Point Plot')
+    plt.axis('equal')
+    plt.show()
+
+
+
+
+def animate_points_2d(points):
+    """
+    Animate points being added to a 2D scatter plot.
+    Args:
+        points: numpy array of shape (N, 2) containing x, y coordinates
+    """
+    fig, ax = plt.subplots()
+    ax.set_xlim([np.min(points[:, 0]), np.max(points[:, 0])])
+    ax.set_ylim([np.min(points[:, 1]), np.max(points[:, 1])])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_title('2D Point Animation')
+    scat = ax.scatter([], [], c='blue')
+
+    def update(frame):
+        x = points[:frame, 0]
+        y = points[:frame, 1]
+        scat.set_offsets(np.c_[x, y])
+        return scat,
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(points)+1, interval=20, blit=False, repeat=False
+    )
+    plt.show()
+
+# array = atm.BreadthTraversalList(10,10)
+# animate_points_2d(array)
+# array = atm.VerticalDepthTraversalList(10,10)
+# animate_points_2d(array)
+# array = atm.HorizontalDepthTraversalList(10,10)
+# animate_points_2d(array)
+# array = atm.SnakeVerticalTraversalList(10,10)
+# animate_points_2d(array)
+# array = atm.SnakeHorizontalTraversalList(10,10)
+# animate_points_2d(array)
+
+tsi = TSI(20,20,1)
+tsi.Traverse()
+array = tsi.ReturnTraverseList()
+animate_points_2d(array)
+
+# Example usage:
+# animate_points_2d(points_2d)
+
+# Example usage:
+# points_2d = np.array([[1, 2], [2, 3], [3, 1]])
+# display_points_2d(points_2d)
+
+# Usage:
+#display_vertices_3d(verticies)
+#animate_vertices_3d(verticies)
 
 
