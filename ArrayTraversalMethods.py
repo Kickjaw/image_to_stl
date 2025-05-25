@@ -252,3 +252,73 @@ class TraverseSpiralInwards():
 
     def ReturnTraverseList(self):
         return self.traverseList
+    
+class SpiralOutwards():
+    def __init__(self, rows, cols, rotation):
+        self.x = x
+        self.y = y
+        self.rows = rows
+        self.cols = cols
+        self.rotation = rotation
+        self.traverseList = np.zeros((self.rows*self.cols,2))
+        self.visitedMatrix = np.zeros((rows,cols), dtype=bool)
+
+    def Traverse(self):
+        count = 0
+        while True:
+            self.traverseList[count]=[self.x, self.y]
+
+            
+    def ChangeDirection(self):
+        if self.rotation == Rotation.ClockWise:
+            if self.direction == Direction.Up:
+                self.direction = Direction.Right
+            elif self.direction == Direction.Right:
+                self.direction = Direction.Down
+            elif self.direction == Direction.Down:
+                self.direction = Direction.Left
+            elif self.direction == Direction.Left:
+                self.direction = Direction.Up
+        else:
+            if self.direction == Direction.Up:
+                self.direction = Direction.Left
+            elif self.direction == Direction.Right:
+                self.direction = Direction.Up
+            elif self.direction == Direction.Down:
+                self.direction = Direction.Right
+            elif self.direction == Direction.Left:
+                self.direction = Direction.Down
+
+    def Move(self):
+        if self.direction == Direction.Up:
+            self.y -=1
+        elif self.direction == Direction.Right:
+            self.x +=1
+        elif self.direction == Direction.Down:
+            self.y +=1
+        elif self.direction == Direction.Left:
+            self.x -=1        
+
+    def CheckMove(self, direction):
+        xTarget = self.x
+        yTarget = self.y
+
+        if direction == Direction.Up:
+            yTarget -=1
+        elif direction == Direction.Right:
+            xTarget +=1
+        elif direction == Direction.Down:
+            yTarget +=1
+        elif direction == Direction.Left:
+            xTarget -=1
+        
+        if xTarget > self.cols-1 or xTarget < 0:
+            return False
+        if yTarget > self.rows-1 or yTarget < 0:
+            return False
+
+        if self.visitedMatrix[xTarget,yTarget]:
+            return False 
+        return True
+    def ReturnTraverseList(self):
+        return self.traverseList
